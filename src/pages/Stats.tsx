@@ -1,15 +1,16 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import { fetchAllPeriodsWithDetails, fetchPeriods, fetchSettings, type Period, type Settings } from "../lib/supabase"
+import { fetchAllPeriodsWithDetails, fetchSettings, type Period, type Settings } from "../lib/supabase"
 import { useToast } from "../components/ui/use-toast"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 export default function Stats() {
   const [periods, setPeriods] = useState<Period[]>([])
-  const [settings, setSettings] = useState<Settings | null>(null)
+  const [ _,setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
   const [cycleStats, setCycleStats] = useState({
     averageCycle: 0,

@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 import { ChevronLeft, ChevronRight, Plus, Droplets, CircleDot, Heart, AlertCircle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { addMonths, format, isSameDay, isWithinInterval, subDays, subMonths } from "date-fns"
+import { addMonths, format, isSameDay, isWithinInterval, subMonths } from "date-fns"
 
 import { Button } from '../components/ui/button';
 import { Calendar } from '../components/ui/calendar';
@@ -67,7 +68,7 @@ export default function CalendarPage() {
   }, [toast])
 
   // Calculate next period and fertile window
-  const { nextPeriod, fertileWindow, ovulationDay } = useMemo(() => {
+  const {  fertileWindow, ovulationDay } = useMemo(() => {
     if (!settings || periods.length === 0) {
       return { nextPeriod: null, fertileWindow: null, ovulationDay: null }
     }
