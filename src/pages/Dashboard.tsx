@@ -1,90 +1,131 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
-import { CalendarIcon, ChevronRight, Droplets, Plus, LineChart, Settings, AlertCircle } from "lucide-react"
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
+'use client';
+import {
+  AlertCircle,
+  CalendarIcon,
+  ChevronRight,
+  Droplets,
+  Plus,
+  Settings,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
-import { Button } from "../components/ui/button"
-import { fetchPeriods, fetchSettings, initializeDefaultSettings, type Period, type Settings as SettingsType } from "../lib/supabase"
-import { calculateNextPeriod, calculateFertileWindow, formatDate, formatShortDate, daysUntil, calculatePeriodDuration } from "../lib/utils"
-import { useToast } from "../components/ui/use-toast"
-import { WelcomeGuide } from "../components/welcome-guide"
-import { Skeleton } from "../components/ui/skeleton"
+import { Button } from '../components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
+import { Skeleton } from '../components/ui/skeleton';
+import { useToast } from '../components/ui/use-toast';
+import { WelcomeGuide } from '../components/welcome-guide';
+import {
+  fetchPeriods,
+  fetchSettings,
+  initializeDefaultSettings,
+  type Period,
+  type Settings as SettingsType,
+} from '../lib/supabase';
+import {
+  calculateFertileWindow,
+  calculateNextPeriod,
+  calculatePeriodDuration,
+  daysUntil,
+  formatDate,
+  formatShortDate,
+} from '../lib/utils';
 
 export default function Dashboard() {
   // State for loading status
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
   // State for period data
-  const [periods, setPeriods] = useState<Period[]>([])
+  const [periods, setPeriods] = useState<Period[]>([]);
   // State for user settings
-  const [settings, setSettings] = useState<SettingsType | null>(null)
+  const [settings, setSettings] = useState<SettingsType | null>(null);
   // State for next period date
-  const [nextPeriod, setNextPeriod] = useState<Date | null>(null)
+  const [nextPeriod, setNextPeriod] = useState<Date | null>(null);
   // State for fertile window
-  const [fertileWindow, setFertileWindow] = useState<{ start: Date; end: Date } | null>(null)
+  const [fertileWindow, setFertileWindow] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
   // State for showing onboarding guide
-  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false);
   // State for error message
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
   // Toast hook for notifications
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   // Load period and settings data
   useEffect(() => {
     async function loadData() {
       try {
-        setLoading(true)
-        setError(null)
+        setLoading(true);
+        setError(null);
 
         // Initialize default settings if none exist
-        await initializeDefaultSettings()
+        await initializeDefaultSettings();
 
         // Fetch periods and settings data
-        const [periodsData, settingsData] = await Promise.all([fetchPeriods(), fetchSettings()])
+        const [periodsData, settingsData] = await Promise.all([
+          fetchPeriods(),
+          fetchSettings(),
+        ]);
 
-        setPeriods(periodsData)
-        setSettings(settingsData)
+        setPeriods(periodsData);
+        setSettings(settingsData);
 
         // Show onboarding if no periods exist
-        setShowOnboarding(periodsData.length === 0)
+        setShowOnboarding(periodsData.length === 0);
 
         // Calculate next period and fertile window if data is available
         if (periodsData.length > 0 && settingsData) {
-          const lastPeriod = new Date(periodsData[0].start_date)
-          const cycleLength = settingsData.cycle_length
+          const lastPeriod = new Date(periodsData[0].start_date);
+          const cycleLength = settingsData.cycle_length;
 
-          const next = calculateNextPeriod(lastPeriod, cycleLength)
-          setNextPeriod(next)
+          const next = calculateNextPeriod(lastPeriod, cycleLength);
+          setNextPeriod(next);
 
-          const fertile = calculateFertileWindow(next)
-          setFertileWindow(fertile)
+          const fertile = calculateFertileWindow(next);
+          setFertileWindow(fertile);
         }
       } catch (error) {
-        console.error("Error loading data:", error)
-        setError("Failed to load your data. Please check your connection and try again.")
+        console.error('Error loading data:', error);
+        setError(
+          'Failed to load your data. Please check your connection and try again.'
+        );
         toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load your data. Please try again.",
-        })
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load your data. Please try again.',
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    loadData()
-  }, [toast])
+    loadData();
+  }, [toast]);
 
   // Calculate days until next period
-  const daysUntilNextPeriod = nextPeriod ? daysUntil(nextPeriod) : null
+  const daysUntilNextPeriod = nextPeriod ? daysUntil(nextPeriod) : null;
 
   // Get last period information
-  const lastPeriod = periods.length > 0 ? new Date(periods[0].start_date) : null
-  const lastPeriodEndDate = periods.length > 0 && periods[0].end_date ? new Date(periods[0].end_date) : null
+  const lastPeriod =
+    periods.length > 0 ? new Date(periods[0].start_date) : null;
+  const lastPeriodEndDate =
+    periods.length > 0 && periods[0].end_date
+      ? new Date(periods[0].end_date)
+      : null;
   const lastPeriodDuration =
-    lastPeriod && lastPeriodEndDate ? calculatePeriodDuration(lastPeriod, lastPeriodEndDate) : null
+    lastPeriod && lastPeriodEndDate
+      ? calculatePeriodDuration(lastPeriod, lastPeriodEndDate)
+      : null;
 
   return (
     <div className="space-y-6">
@@ -129,9 +170,12 @@ export default function Dashboard() {
       ) : showOnboarding ? (
         <Card className="border-dashed border-2 border-primary/50">
           <CardHeader>
-            <CardTitle className="text-center">Welcome to Your Period Tracker</CardTitle>
+            <CardTitle className="text-center">
+              Welcome to Your Period Tracker
+            </CardTitle>
             <CardDescription className="text-center">
-              Get started by logging your first period to see predictions and insights
+              Get started by logging your first period to see predictions and
+              insights
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4 py-6">
@@ -139,7 +183,10 @@ export default function Dashboard() {
               <Droplets className="h-10 w-10 text-primary" />
             </div>
             <div className="text-center max-w-md">
-              <p>Track your periods, symptoms, and moods to get personalized insights about your cycle.</p>
+              <p>
+                Track your periods, symptoms, and moods to get personalized
+                insights about your cycle.
+              </p>
             </div>
           </CardContent>
           <CardFooter className="flex justify-center pb-6">
@@ -166,16 +213,20 @@ export default function Dashboard() {
               {nextPeriod ? (
                 <div className="text-2xl font-bold">
                   {daysUntilNextPeriod === 0
-                    ? "Today"
+                    ? 'Today'
                     : daysUntilNextPeriod === 1
-                      ? "Tomorrow"
-                      : daysUntilNextPeriod && daysUntilNextPeriod > 0
-                        ? `In ${daysUntilNextPeriod} days`
-                        : "Started"}
-                  <div className="mt-1 text-sm font-normal text-muted-foreground">{formatDate(nextPeriod)}</div>
+                    ? 'Tomorrow'
+                    : daysUntilNextPeriod && daysUntilNextPeriod > 0
+                    ? `In ${daysUntilNextPeriod} days`
+                    : 'Started'}
+                  <div className="mt-1 text-sm font-normal text-muted-foreground">
+                    {formatDate(nextPeriod)}
+                  </div>
                 </div>
               ) : (
-                <div className="text-muted-foreground">Add your first period to see predictions</div>
+                <div className="text-muted-foreground">
+                  Add your first period to see predictions
+                </div>
               )}
             </CardContent>
             <CardFooter>
@@ -199,18 +250,24 @@ export default function Dashboard() {
                 {fertileWindow ? (
                   <div>
                     <div className="font-medium">
-                      {formatShortDate(fertileWindow.start)} - {formatShortDate(fertileWindow.end)}
+                      {formatShortDate(fertileWindow.start)} -{' '}
+                      {formatShortDate(fertileWindow.end)}
                     </div>
                     <div className="text-sm text-muted-foreground mt-2">
-                      Based on your average cycle length of {settings?.cycle_length || 28} days
+                      Based on your average cycle length of{' '}
+                      {settings?.cycle_length || 28} days
                     </div>
                     <div className="text-sm mt-2">
-                      <span className="font-medium">Ovulation:</span>{" "}
-                      {formatShortDate(calculateFertileWindow(nextPeriod!).start)}
+                      <span className="font-medium">Ovulation:</span>{' '}
+                      {formatShortDate(
+                        calculateFertileWindow(nextPeriod!).start
+                      )}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-muted-foreground">Add your period data to see fertility predictions</div>
+                  <div className="text-muted-foreground">
+                    Add your period data to see fertility predictions
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -225,22 +282,20 @@ export default function Dashboard() {
                   <div>
                     <div className="font-medium">{formatDate(lastPeriod)}</div>
                     {lastPeriodDuration && (
-                      <div className="text-sm text-muted-foreground mt-2">Duration: {lastPeriodDuration} days</div>
+                      <div className="text-sm text-muted-foreground mt-2">
+                        Duration: {lastPeriodDuration} days
+                      </div>
                     )}
                     <div className="text-sm mt-2">
-                      <span className="font-medium">Flow Level:</span> {periods[0].flow_level}/5
+                      <span className="font-medium">Flow Level:</span>{' '}
+                      {periods[0].flow_level}/5
                     </div>
-                    <div className="mt-2">
-                      <Button variant="outline" size="sm" asChild className="mt-2">
-                        <Link to="/stats">
-                          View Statistics
-                          <ChevronRight className="ml-1 h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
+                    <div className="mt-2"></div>
                   </div>
                 ) : (
-                  <div className="text-muted-foreground">No period data recorded yet</div>
+                  <div className="text-muted-foreground">
+                    No period data recorded yet
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -253,25 +308,32 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center" asChild>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col items-center justify-center"
+                  asChild
+                >
                   <Link to="/add">
                     <Plus className="h-6 w-6 mb-2" />
                     <span>Log Period</span>
                   </Link>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center" asChild>
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col items-center justify-center"
+                  asChild
+                >
                   <Link to="/calendar">
                     <CalendarIcon className="h-6 w-6 mb-2" />
                     <span>View Calendar</span>
                   </Link>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center" asChild>
-                  <Link to="/stats">
-                    <LineChart className="h-6 w-6 mb-2" />
-                    <span>View Stats</span>
-                  </Link>
-                </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center" asChild>
+
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex flex-col items-center justify-center"
+                  asChild
+                >
                   <Link to="/settings">
                     <Settings className="h-6 w-6 mb-2" />
                     <span>Settings</span>
@@ -283,5 +345,5 @@ export default function Dashboard() {
         </>
       )}
     </div>
-  )
+  );
 }

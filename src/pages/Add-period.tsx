@@ -50,45 +50,7 @@ const MOODS = [
   { id: "tired", label: "Tired" },
 ]
 
-/**
- * Component for logging period details, symptoms, and moods.
- *
- * This component provides a form to log period-related data, including start and end dates,
- * flow level, notes, symptoms, and moods. It also handles form submission to save the data
- * to a backend service.
- *
- * @component
- * @returns {JSX.Element} The rendered AddPeriod component.
 
- * ```
- *
- * @function AddPeriod
- *
- * @state {Date | undefined} startDate - The selected start date of the period.
- * @state {Date | undefined} endDate - The selected end date of the period (optional).
- * @state {number} flowLevel - The flow level of the period (1-5 scale).
- * @state {string} notes - Additional notes about the period.
- * @state {string[]} selectedSymptoms - List of selected symptom IDs.
- * @state {string[]} selectedMoods - List of selected mood IDs.
- * @state {Record<string, number>} symptomSeverity - Severity levels for selected symptoms.
- * @state {Record<string, number>} moodIntensity - Intensity levels for selected moods.
- * @state {boolean} loading - Indicates whether the form is submitting.
- *
- * @event handleSymptomToggle - Toggles the selection of a symptom and initializes its severity.
- * @event handleMoodToggle - Toggles the selection of a mood and initializes its intensity.
- * @event handleSubmit - Handles form submission, validates input, and saves data to the backend.
- *
- * @ui
- * - Displays a form with fields for start date, end date, flow level, notes, symptoms, and moods.
- * - Includes sliders for adjusting symptom severity and mood intensity.
- * - Provides buttons for canceling or submitting the form.
- *
- * @error
- * - Displays error toasts if required fields are missing or if saving data fails.
- *
- * @success
- * - Displays success toasts when data is saved successfully.
- */
 export default function AddPeriod() {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date())
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
@@ -255,11 +217,15 @@ export default function AddPeriod() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
+                  {/* pick when their period stops (optional). */}
+                  (can't pick an end date earlier than the start date).
                     <Calendar
                       mode="single"
                       selected={endDate}
                       onSelect={setEndDate}
                       initialFocus
+                      // already chose an end date → Show it (e.g., "April 5").
+                      // If not chosen → Show "Select date" (like a blank time portal).
                       disabled={(date) => (startDate ? date < startDate : false)}
                     />
                   </PopoverContent>
